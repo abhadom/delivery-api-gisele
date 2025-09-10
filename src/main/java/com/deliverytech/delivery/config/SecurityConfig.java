@@ -28,7 +28,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "**", "health", "info")
+                                "**", "/actuator/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
