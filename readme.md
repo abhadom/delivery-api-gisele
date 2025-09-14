@@ -19,7 +19,7 @@ Este projeto é parte de uma entrega acadêmica e pode conter implementações e
 
 ```bash
 # Clonar o repositório
-git clone <url-do-repositorio>
+git clone <https://github.com/abhadom/delivery-api-gisele.git>
 
 # Entrar no diretório
 cd delivery-api
