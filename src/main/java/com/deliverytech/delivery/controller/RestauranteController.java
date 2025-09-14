@@ -1,107 +1,132 @@
 package com.deliverytech.delivery.controller;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.deliverytech.delivery.dto.request.RestauranteRequest;
 import com.deliverytech.delivery.dto.response.RestauranteResponse;
 import com.deliverytech.delivery.exception.ConflictException;
 import com.deliverytech.delivery.model.Restaurante;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-
 import com.deliverytech.delivery.service.RestauranteService;
 
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "Restaurantes", description = "Endpoint de restaurantes")
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@CrossOrigin
 @RestController
 @RequestMapping("/api/restaurantes")
 @RequiredArgsConstructor
 public class RestauranteController {
 
-        private final RestauranteService restauranteService;
+    private final RestauranteService restauranteService;
 
-        @PostMapping
-        @Operation(summary = "Cadastra um Restaurante")
-        public ResponseEntity<RestauranteResponse> cadastrar(@Valid @RequestBody RestauranteRequest request) {
-
-                // Validação: Verificar se já existe um restaurante com o mesmo nome
-                if (restauranteService.findByNome(request.getNome())) {
-                        throw new ConflictException("Já existe um restaurante cadastrado com este nome.", "nome",
-                                        request.getNome());
-                }
-
-                Restaurante restaurante = Restaurante.builder()
-                                .nome(request.getNome())
-                                .telefone(request.getTelefone())
-                                .categoria(request.getCategoria())
-                                .taxaEntrega(request.getTaxaEntrega())
-                                .tempoEntregaMinutos(request.getTempoEntregaMinutos())
-                                .ativo(true)
-                                .build();
-                Restaurante salvo = restauranteService.cadastrar(restaurante);
-                return ResponseEntity.ok(new RestauranteResponse(
-                                salvo.getId(), salvo.getNome(), salvo.getCategoria(), salvo.getTelefone(),
-                                salvo.getTaxaEntrega(), salvo.getTempoEntregaMinutos(), salvo.getAtivo()));
+    @PostMapping
+    public ResponseEntity<RestauranteResponse> cadastrar(@Valid @RequestBody RestauranteRequest request) {
+        if (restauranteService.findByNome(request.getNome())) {
+            throw new ConflictException("Já existe um restaurante cadastrado com este nome.", "nome", request.getNome());
         }
 
-        @GetMapping
-        @Operation(summary = "Lista os restaurantes cadastrados", description = "Retorna uma lista de restaurantes cadastrados no sistema")
-        public List<RestauranteResponse> listarTodos() {
-                return restauranteService.listarTodos().stream()
-                                .map(r -> new RestauranteResponse(r.getId(), r.getNome(), r.getCategoria(),
-                                                r.getTelefone(),
-                                                r.getTaxaEntrega(), r.getTempoEntregaMinutos(), r.getAtivo()))
-                                .collect(Collectors.toList());
-        }
+        Restaurante restaurante = Restaurante.builder()
+                .nome(request.getNome())
+                .telefone(request.getTelefone())
+                .categoria(request.getCategoria())
+                .taxaEntrega(request.getTaxaEntrega())
+                .tempoEntregaMinutos(request.getTempoEntregaMinutos())
+                .ativo(true)
+                .build();
 
-        @GetMapping("/{id}")
-        @Operation(summary = "Lista os restaurantes por ID", description = "Lista os dados de um restaurante a partir do ID informado")
-        public ResponseEntity<RestauranteResponse> buscarPorId(@PathVariable Long id) {
-                return restauranteService.buscarPorId(id)
-                                .map(r -> new RestauranteResponse(r.getId(), r.getNome(), r.getCategoria(),
-                                                r.getTelefone(),
-                                                r.getTaxaEntrega(), r.getTempoEntregaMinutos(), r.getAtivo()))
-                                .map(ResponseEntity::ok)
-                                .orElse(ResponseEntity.notFound().build());
-        }
+        Restaurante salvo = restauranteService.cadastrar(restaurante);
 
-        @GetMapping("/categoria/{categoria}")
-        @Operation(summary = "Lista os restaurantes por categoria", description = "Lista os dados de um restaurante a partir da categoria informada")
-        public List<RestauranteResponse> buscarPorCategoria(@PathVariable String categoria) {
-                return restauranteService.buscarPorCategoria(categoria).stream()
-                                .map(r -> new RestauranteResponse(r.getId(), r.getNome(), r.getCategoria(),
-                                                r.getTelefone(),
-                                                r.getTaxaEntrega(), r.getTempoEntregaMinutos(), r.getAtivo()))
-                                .collect(Collectors.toList());
-        }
+        return ResponseEntity.ok(new RestauranteResponse(
+                salvo.getId(),
+                salvo.getNome(),
+                salvo.getCategoria(),
+                salvo.getTelefone(),
+                salvo.getTaxaEntrega(),
+                salvo.getTempoEntregaMinutos(),
+                salvo.getAtivo()
+        ));
+    }
 
-        @PutMapping("/{id}")
-        @Operation(summary = "Atualiza os dados de um restaurante", description = "Atualiza os dados de um restaurante a partir do ID informado")
-        public ResponseEntity<RestauranteResponse> atualizar(@PathVariable Long id,
-                        @Valid @RequestBody RestauranteRequest request) {
-                Restaurante atualizado = Restaurante.builder()
-                                .nome(request.getNome())
-                                .telefone(request.getTelefone())
-                                .categoria(request.getCategoria())
-                                .taxaEntrega(request.getTaxaEntrega())
-                                .tempoEntregaMinutos(request.getTempoEntregaMinutos())
-                                .build();
-                Restaurante salvo = restauranteService.atualizar(id, atualizado);
-                return ResponseEntity.ok(new RestauranteResponse(salvo.getId(), salvo.getNome(), salvo.getCategoria(),
-                                salvo.getTelefone(), salvo.getTaxaEntrega(), salvo.getTempoEntregaMinutos(),
-                                salvo.getAtivo()));
-        }
+    @PutMapping("/{id}")
+    public ResponseEntity<RestauranteResponse> atualizar(@PathVariable Long id,
+                                                         @Valid @RequestBody RestauranteRequest request) {
+        Restaurante atualizado = Restaurante.builder()
+                .nome(request.getNome())
+                .telefone(request.getTelefone())
+                .categoria(request.getCategoria())
+                .taxaEntrega(request.getTaxaEntrega())
+                .tempoEntregaMinutos(request.getTempoEntregaMinutos())
+                .build();
+
+        Restaurante salvo = restauranteService.atualizar(id, atualizado);
+
+        return ResponseEntity.ok(new RestauranteResponse(
+                salvo.getId(),
+                salvo.getNome(),
+                salvo.getCategoria(),
+                salvo.getTelefone(),
+                salvo.getTaxaEntrega(),
+                salvo.getTempoEntregaMinutos(),
+                salvo.getAtivo()
+        ));
+    }
+
+    @GetMapping
+    public List<RestauranteResponse> listarTodos() {
+        return restauranteService.listarTodos().stream()
+                .map(r -> new RestauranteResponse(
+                        r.getId(),
+                        r.getNome(),
+                        r.getCategoria(),
+                        r.getTelefone(),
+                        r.getTaxaEntrega(),
+                        r.getTempoEntregaMinutos(),
+                        r.getAtivo()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<RestauranteResponse> buscarPorId(@PathVariable Long id) {
+        return restauranteService.buscarPorId(id)
+                .map(r -> new RestauranteResponse(
+                        r.getId(),
+                        r.getNome(),
+                        r.getCategoria(),
+                        r.getTelefone(),
+                        r.getTaxaEntrega(),
+                        r.getTempoEntregaMinutos(),
+                        r.getAtivo()
+                ))
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/categoria/{categoria}")
+    public List<RestauranteResponse> buscarPorCategoria(@PathVariable String categoria) {
+        return restauranteService.buscarPorCategoria(categoria).stream()
+                .map(r -> new RestauranteResponse(
+                        r.getId(),
+                        r.getNome(),
+                        r.getCategoria(),
+                        r.getTelefone(),
+                        r.getTaxaEntrega(),
+                        r.getTempoEntregaMinutos(),
+                        r.getAtivo()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    // Caso queira adicionar ativar/desativar no futuro
+    @PatchMapping("/{id}/ativar-desativar")
+    public ResponseEntity<Void> ativarDesativar(@PathVariable Long id) {
+        // Implementar no serviço se necessário
+        // restauranteService.ativarDesativar(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -18,4 +18,8 @@ public interface RestauranteService {
 
     boolean findByNome(String nome);
 
+    void ativarDesativar(Long id);
+    
+    List<Restaurante> listarAtivos();
+
 }

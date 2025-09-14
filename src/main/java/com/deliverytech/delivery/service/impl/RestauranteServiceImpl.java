@@ -52,4 +52,19 @@ public class RestauranteServiceImpl implements RestauranteService {
     public boolean findByNome(String nome) {
         return restauranteRepository.findByNome(nome).isPresent();
     }
+
+    @Override
+    public void ativarDesativar(Long id) {
+    restauranteRepository.findById(id).ifPresent(r -> {
+        r.setAtivo(!r.getAtivo());
+        restauranteRepository.save(r);
+    });
+}
+
+    @Override
+    public List<Restaurante> listarAtivos() {
+        return restauranteRepository.findByAtivoTrue();
+    }
+
+
 }

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.deliverytech.delivery.exception.EntityNotFoundException;
 import com.deliverytech.delivery.model.Cliente;
 import com.deliverytech.delivery.repository.ClienteRepository;
 import com.deliverytech.delivery.service.ClienteService;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ClienteServiceImpl implements ClienteService {
+
     private final ClienteRepository clienteRepository;
 
     @Override
@@ -33,19 +35,18 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     public Cliente atualizar(Long id, Cliente atualizado) {
-        return clienteRepository.findById(id)
-                .map(c -> {
-                    c.setNome(atualizado.getNome());
-                    return clienteRepository.save(c);
-                })
-                .orElseThrow(
-                        () -> new RuntimeException("Cliente não encontrado"));
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente", id));
+        cliente.setNome(atualizado.getNome());
+        cliente.setEmail(atualizado.getEmail());
+        return clienteRepository.save(cliente);
     }
+
     @Override
     public void ativarDesativar(Long id) {
-        clienteRepository.findById(id).ifPresent(c -> {
-            c.setAtivo(!c.getAtivo());
-            clienteRepository.save(c);
-        });
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente", id));
+        cliente.setAtivo(!cliente.getAtivo());
+        clienteRepository.save(cliente);
     }
 }
